@@ -11,6 +11,7 @@ const server = http.createServer((request, response) => {
 
 const socket = io(server);
 let usersList = [];
+let delUsersList = [];
 
 function getRandomColor() {
     var letters = '0123456789ABCDEF';
@@ -24,21 +25,41 @@ socket.on('connection', client => {
     console.log('Client ID: ' + client.id);
     client.broadcast.emit('NEW_CLIENT_CONNECTED');
 
-    client.on('NewPlayer', data => {
+    client.on('NewPlayer', name => {
         let user = {
             name: '',
             color: '',
             id: ''
         }
-        user.name = data;
-        user.color = getRandomColor();
-        user.id = client.id;
-        usersList.push(user);
-    console.log('New client connected ' + data);
+        let index = delUsersList.findIndex(function(user, index ) {
+            if (user.name === name) {
+                return true;
+            };
+        })
+        if (index >-1) {
+            oldUser = delUsersList.splice(index,1);
+            usersList.push(oldUser[0]);
+            console.log("Welcome back " +  oldUser[0].name);
+        } else {
+            user.name = name;
+            user.color = getRandomColor();
+            user.id = client.id;
+            usersList.push(user);
+            console.log('New client connected ' + name);
+        }
     console.log(usersList);
     })
-    client.on('disconnect', data => {
-        console.log('Client  disconnected');
+    client.on('disconnect', name => {
+        let index = usersList.findIndex(function(user, index){
+            if (user.id === client.id) {
+                return true;
+            }
+        });
+        delUser = usersList.splice(index, 1);
+        delUsersList.push(delUser[0])
+        console.log('Client  disconnected: ' + delUser[0].name);
+        console.log(usersList);
+
     })
     client.on('CLIENT_MSG', data => {
         const payload = {

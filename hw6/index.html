@@ -22,13 +22,7 @@
         person_name = prompt("Welcome. Please enter your name");
 
         socket.emit('NewPlayer', person_name);
-
-        socket.on('disconnected', function() {
-
-            socket.emit('DelPlayer', person_name);
-
-        });
-
+    
     });
 
     socket.on('NEW_CLIENT_CONNECTED', () => {
